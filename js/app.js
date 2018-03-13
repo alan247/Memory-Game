@@ -1,12 +1,15 @@
 // Initialize variables
 let cards = ["fa-paper-plane", "fa-anchor", "fa-diamond", "fa-bolt", "fa-cube", "fa-leaf", "fa-bicycle", "fa-bomb"];
 let openCards = [];
+let openCardsId = [];
+let solvedIds = [];
 let moves = 0;
 let matches = 0;
 let started = false;
 let starsCount = 3;
 let timer = new Timer();
 const timerContainer = document.querySelector('.timer');
+const deck = document.querySelector('.deck');
 
 
 // Timer setup
@@ -36,8 +39,8 @@ function shuffle(array) {
 
 
 // Creates the card markup and adds it to the deck
-function createCard(cardName) {
-	const markUp = `<li class="card"><i class="fa ${cardName}"></i></li>`;
+function createCard(cardName, id) {
+	const markUp = `<li class="card" data-id="${id}"><i class="fa ${cardName}"></i></li>`;
 	const deckContainer = document.querySelector('.deck');
 	deckContainer.innerHTML += markUp;
 }
@@ -53,24 +56,46 @@ function toggleCard(card){
 // Checks if the opened cards match
 function checkMatch(card) {
 
+	const cardId = card.getAttribute('data-id');
+
 	// Push the current card to the array created to store them
 	openCards.push(card);
+	openCardsId.push(cardId);
+
+	// Checks if the same card was clicked
+	if(openCardsId.length > 1){
+		if(openCardsId[0] === cardId){
+			openCardsId.pop();
+			openCards.pop();
+			return;
+		}
+	}
+
+	// Toggle the card
+	toggleCard(card);
 
 	// If there are 2 cards in the array, make a comparison
 	if(openCards.length === 2){
+
+		removeClickListener();
 		if (openCards[0].querySelector('i').classList[1] === openCards[1].querySelector('i').classList[1]) {
+			solvedIds.push(openCards[0].getAttribute('data-id'), openCards[1].getAttribute('data-id'));
 			openCards = []; // Empty the array
+			openCardsId = [];
+			addMove(); // Add a move to the counter
 			winCheck();
-			console.log('MATCH!');
-			console.log(matches);
-		} else {	// If they don't match, toggle them back and empty the open cards array
+			createClickListener();
+		} else {
+			// If they don't match, toggle them back and empty the open cards array
 			setTimeout(function() {
 				toggleCard(openCards[0]);
 				toggleCard(openCards[1]);
 				openCards = []; //empty array
-			}, 400);
+				openCardsId = [];
+				addMove(); // Add a move to the counter
+				createClickListener();
+			}, 500);
 		}
-		addMove(); // Add a move to the counter
 	}
 }
 
@@ -100,7 +125,7 @@ function addMove(){
 	moves++;
 
 	const movesElement = document.querySelector(".moves");
-	movesElement.textContent = moves; // U
+	movesElement.textContent = moves;
 
 	// Update the stars according to the number of moves
 	if(moves > 15 && moves < 20){
@@ -136,19 +161,30 @@ function endGame(){
 }
 
 
-// Checks when a card has been clicked and fires the class toggles and match checks
-document.querySelector('.deck').addEventListener('click', function (event) {
-  if (event.target.classList.contains('card')) {
+function listenerAction(event) {
+	if (event.target.classList.contains('card')) {
 
 	if(!started){
 		started = true;
 		timer.start();
 	}
 
-    toggleCard(event.target);
-	checkMatch(event.target);
-  }
-})
+	const targetId = event.target.getAttribute('data-id');
+
+	if (!solvedIds.includes(targetId)){
+		checkMatch(event.target);
+	}
+
+	}
+}
+
+function createClickListener() {
+	deck.addEventListener('click', listenerAction)
+}
+
+function removeClickListener() {
+	deck.removeEventListener('click', listenerAction)
+}
 
 
 // Event listener for the reset button
@@ -166,6 +202,8 @@ function resetGame() {
 	document.querySelector('.modal').classList.remove('display');
 	document.querySelector('.overlay').classList.remove('display');
 	started = false;
+	openCards = [];
+	solvedIds = [];
 	restoreStars();
 	play();
 }
@@ -173,8 +211,14 @@ function resetGame() {
 
 // Start the game: calls shuffle() and iterates over each item to create the cards
 function play() {
-	const shuffledDeck = shuffle(cards)
-	shuffledDeck.forEach(createCard)
+	const shuffledDeck = shuffle(cards);
+
+	for(let i=0; i< shuffledDeck.length; i++) {
+		createCard(shuffledDeck[i], i);
+	}
+	// shuffledDeck.forEach(createCard);
+	createClickListener();
+
 }
 
 // Let's start!
