@@ -161,27 +161,35 @@ function endGame(){
 }
 
 
+// Actions that should happen after a card is clickedd
 function listenerAction(event) {
 	if (event.target.classList.contains('card')) {
 
-	if(!started){
-		started = true;
-		timer.start();
-	}
+		// Is the game started? If not, start the timer!
+		if(!started){
+			started = true;
+			timer.start();
+		}
 
-	const targetId = event.target.getAttribute('data-id');
+		// Get the current card's id!
+		const targetId = event.target.getAttribute('data-id');
 
-	if (!solvedIds.includes(targetId)){
-		checkMatch(event.target);
-	}
+		// Only go ahead if the cards haven't been already solved
+		if (!solvedIds.includes(targetId)){
+			checkMatch(event.target);
+		}
 
 	}
 }
 
+
+// Function to create the cards event listener
 function createClickListener() {
 	deck.addEventListener('click', listenerAction)
 }
 
+
+// Function to remove listener to avoid game malfunctioning
 function removeClickListener() {
 	deck.removeEventListener('click', listenerAction)
 }
