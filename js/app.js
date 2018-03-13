@@ -177,6 +177,9 @@ function listenerAction(event) {
 		// Only go ahead if the cards haven't been already solved
 		if (!solvedIds.includes(targetId)){
 			checkMatch(event.target);
+		} else {
+			console.log('nopepepe');
+
 		}
 
 	}
@@ -211,6 +214,7 @@ function resetGame() {
 	document.querySelector('.overlay').classList.remove('display');
 	started = false;
 	openCards = [];
+	openCardsId = [];
 	solvedIds = [];
 	restoreStars();
 	play();
